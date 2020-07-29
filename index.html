@@ -1,0 +1,351 @@
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+<h1>Index</h1>
+<div class="col-md-12">
+    <div class="row">
+        <div class="col-md-6">
+            <div style="padding:10px"><a class="btn btn-primary" onclick="updatePlug('ccs','ccs')"> CCS / CCS </a></div>
+        </div>
+        <div class="col-md-6">
+            <div style="padding:10px"><a class="btn btn-primary" onclick="updatePlug('chademo','chademo')">Chademo / Chademo </a></div>
+        </div>
+    </div>
+</div>
+<div class="col-md-12">
+    <div class="row">
+        <div class="col-md-6">
+            <div style="padding:10px"><a class="btn btn-primary" onclick="updatePlug('ccs','chademo')"> CCS / Chademo </a></div>
+        </div>
+        <div class="col-md-6">
+            <div style="padding:10px"><a class="btn btn-primary" onclick="updatePlug('chademo','ccs')">Chademo / CCS </a></div>
+        </div>
+    </div>
+</div>
+
+<div class="col-md-12">
+    <div class="row">
+        <div class="col-md-6">
+            <div style="padding:10px"><a class="btn btn-primary" onclick="changeMode('BoostStateStarting')"> Boost State Starting </a></div>
+        </div>
+        <div class="col-md-6">
+            <div style="padding:10px"><a class="btn btn-primary" onclick="changeMode('BoostStateSystemFault')">Boost State SystemFault </a></div>
+        </div>
+    </div>
+</div>
+<div class="col-md-12">
+    <div class="row">
+        <div class="col-md-6">
+            <div style="padding:10px"><a class="btn btn-primary" onclick="changeMode('BoostStateRunning')"> Boost State Running </a></div>
+        </div>
+        <div class="col-md-6">
+            <div style="padding:10px"><a class="btn btn-primary" onclick="changeMode('SystemStateShuttingDown')">System State ShuttingDown  </a></div>
+        </div>
+    </div>
+</div>
+<div class="col-md-12">
+    <div class="row">
+        <div class="col-md-6">
+            <div style="padding:10px"><a class="btn btn-primary" onclick="changeStatus({left: 'CHARGING', right:'CHARGING'})"> Both Charging </a></div>
+        </div>
+        <div class="col-md-6">
+            <div style="padding:10px"><a class="btn btn-primary" onclick="changeStatus({left: 'AVAILABLE', right:'AVAILABLE'})">Both Idle </a></div>
+        </div>
+    </div>
+</div>
+<div class="col-md-12">
+    <div class="row">
+        <div class="col-md-6">
+            <div style="padding:10px"><a class="btn btn-primary" onclick="turnOffPlug('left')"> Left Unavailable </a></div>
+        </div>
+        <div class="col-md-6">
+            <div style="padding:10px"><a class="btn btn-primary" onclick="turnOffPlug('right')">Right Unavailable </a></div>
+        </div>
+    </div>
+</div>
+<div class="col-md-12">
+    <div class="row">
+        <div class="col-md-6">
+            <div style="padding:10px"><a class="btn btn-primary" onclick="changeStatus({left: 'CHARGING', right:'AVAILABLE'})">Left Charging Right Idle</a></div>
+        </div>
+        <div class="col-md-6">
+            <div style="padding:10px"><a class="btn btn-primary" onclick="changeStatus({left: 'AVAILABLE', right:'CHARGING'})">Left Idle Right Charging</a></div>
+        </div>
+    </div>
+</div>
+
+<div class="col-md-12">
+    <div class="row">
+        <div class="col-md-6">
+            <div style="padding:10px"><a class="btn btn-primary" onclick="increaseLeftPlugPercent()"> Increase Left Charging</a></div>
+        </div>
+        <div class="col-md-6">
+            <div style="padding:10px"><a class="btn btn-primary" onclick="increaseRightPlugPercent()"> Increase Right Charging</a></div>
+        </div>
+    </div>
+</div>
+
+<div class="col-md-12">
+    <div class="row">
+        <div class="col-md-6">
+            <div style="padding:10px"><a class="btn btn-primary" onclick="changeCCStatus('AUTH_SUCCESS')">CC auth success</a></div>
+        </div>
+        <div class="col-md-6">
+            <div style="padding:10px"><a class="btn btn-primary" onclick="changeCCStatus('IDLE')">CC Idle</a></div>
+        </div>
+    </div>
+</div>
+<div class="col-md-12">
+    <div class="row">
+        <div class="col-md-6">
+            <div style="padding:10px"><a class="btn btn-primary" onclick="changeCCStatus('AUTH_FAILED')">CC auth failed</a></div>
+        </div>
+        <div class="col-md-4">
+            <div style="padding:10px"><a class="btn btn-primary" onclick="changeCCStatus('CARD_AUTHORIZING')">CC Authorising</a></div>
+        </div>
+        <div class="col-md-2">
+            <div style="padding:10px"><a class="btn btn-primary" onclick="changeCCStatus('WAITING_FOR_CARD')">CC Waiting For Card</a></div>
+        </div>
+    </div>
+</div>
+<div class="col-md-12">
+    <div class="row">
+        <div class="col-md-6">
+            <div style="padding:10px"><a class="btn btn-primary" onclick="activateState('left')">Left activating</a></div>
+        </div>
+        <div class="col-md-6">
+            <div style="padding:10px"><a class="btn btn-primary" onclick="activateState('right')">Right Activating</a></div>
+        </div>
+    </div>
+</div>
+<div class="col-md-12">
+    <div class="row">
+        <div class="col-md-6"><div style="padding:10px"><a class="btn btn-primary" onclick="initializeState('left')">Left Initializing </a></div></div>
+        <div class="col-md-6">
+            <div style="padding:10px"><a class="btn btn-primary" onclick="initializeState('right')">Right initializing</a></div>
+        </div>
+    </div>
+</div>
+
+<div class="col-md-12">
+    <div class="row">
+        <div class="col-md-6"><div style="padding:10px"><a class="btn btn-primary" onclick="insulationCheck('right')">Insulation Check Right </a></div></div>
+        <div class="col-md-6"><div style="padding:10px"><a class="btn btn-primary" onclick="insulationCheck('left')"> Insulation Check Left </a></div></div>
+    </div>
+</div>
+<div class="col-md-12">
+    <div class="row">
+        <div class="col-md-6"><div style="padding:10px"><a class="btn btn-primary" onclick="waitForStart('left')">Left Wait For Start</a></div></div>
+        <div class="col-md-6"><div style="padding:10px"><a class="btn btn-primary" onclick="waitForStart('right')"> Right Wait For Start </a></div></div>
+    </div>
+</div>
+<div class="col-md-12">
+    <div class="row">
+        <div class="col-md-6"><div style="padding:10px"><a class="btn btn-primary" onclick="stopCharging('left')">Stop Left charging </a></div></div>
+        <div class="col-md-6">
+            <div class="col-md-6"><div style="padding:10px"><a class="btn btn-primary" onclick="stopCharging('right')">Stop Right charging </a></div></div>
+        </div>
+    </div>
+</div>
+
+<div class="col-md-12">
+    <div class="row">
+        <div class="col-md-6"><div style="padding:10px"><a class="btn btn-primary" onclick="abortCharging('left')">Abort Left charging </a></div></div>
+        <div class="col-md-6">
+            <div class="col-md-6"><div style="padding:10px"><a class="btn btn-primary" onclick="abortCharging('right')">Abort Right charging </a></div></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updatePlug(plug1, plug2) {
+        var http = new XMLHttpRequest();
+            var url = 'http://localhost:3001/updatePlug/';
+            var data = {
+                plug1: plug1,
+                plug2: plug2
+            };
+            http.open('POST', url, true);
+            http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+            http.onreadystatechange = function () {
+                console.log('success submit',http.responseText);
+            }
+            http.send(JSON.stringify(data));
+    }
+
+    function changeMode(mode) {
+        var http = new XMLHttpRequest(),
+            url = 'http://localhost:3001/changeMode/',
+            data = {
+                mode: mode
+            };
+            http.open('POST', url, true);
+            http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+            http.onreadystatechange = function () {
+                console.log('success submit',http.responseText);
+            }
+            console.log('data==',data)
+            http.send(JSON.stringify(data));
+    }
+
+    function changeStatus(data) {
+        console.log('change status===',data)
+        var http = new XMLHttpRequest(),
+            url = 'http://localhost:3001/changeStatus/';
+            http.open('POST', url, true);
+            http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+            http.onreadystatechange = function () {
+                console.log('success change status',http.responseText);
+            }
+            console.log('data==',data)
+            http.send(JSON.stringify(data));
+    }
+
+    function increaseLeftPlugPercent() {
+        var http = new XMLHttpRequest(),
+            url = 'http://localhost:3001/increaseLeftCharging/';
+            http.open('POST', url, true);
+            http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+            http.onreadystatechange = function () {
+                console.log('success change status',http.responseText);
+            }
+            http.send();
+    }
+
+    function increaseRightPlugPercent() {
+        var http = new XMLHttpRequest(),
+            url = 'http://localhost:3001/increaseRightCharging/';
+            http.open('POST', url, true);
+            http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+            http.onreadystatechange = function () {
+                console.log('success change status',http.responseText);
+            }
+            http.send();
+    }
+
+    function changeCCStatus(status) {
+        var http = new XMLHttpRequest(),
+            data = {
+                status: status
+            }
+            url = 'http://localhost:3001/changeCCStatus/';
+            http.open('POST', url, true);
+            http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+            http.onreadystatechange = function () {
+                console.log('success change status',http.responseText);
+            }
+            http.send(JSON.stringify(data));
+    }
+
+    function activateState(state) {
+        var http = new XMLHttpRequest(),
+            data = {
+                state: state
+            },
+            url = 'http://localhost:3001/activateState/';
+            http.open('POST', url, true);
+            http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+            http.onreadystatechange = function () {
+                console.log('success change status',http.responseText);
+            }
+            http.send(JSON.stringify(data));
+    }
+
+    function initializeState(state) {
+        var http = new XMLHttpRequest(),
+            data = {
+                state: state
+            },
+            url = 'http://localhost:3001/initializeState/';
+            http.open('POST', url, true);
+            http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+            http.onreadystatechange = function () {
+                console.log('success change status',http.responseText);
+            }
+            http.send(JSON.stringify(data));
+    }
+
+    function insulationCheck(state) {
+        var http = new XMLHttpRequest(),
+            data = {
+                state: state
+            },
+            url = 'http://localhost:3001/insulationCheck/';
+            http.open('POST', url, true);
+            http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+            http.onreadystatechange = function () {
+                console.log('success change status',http.responseText);
+            }
+            http.send(JSON.stringify(data));
+    }
+
+    function waitForStart(state) {
+        var http = new XMLHttpRequest(),
+            data = {
+                state: state
+            },
+            url = 'http://localhost:3001/waitForStart/';
+            http.open('POST', url, true);
+            http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+            http.onreadystatechange = function () {
+                console.log('success change status',http.responseText);
+            }
+            http.send(JSON.stringify(data));
+    }
+
+    function stopCharging(state) {
+        var http = new XMLHttpRequest(),
+            data = {
+                state: state
+            },
+            url = 'http://localhost:3001/stopCharging/';
+            http.open('POST', url, true);
+            http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+            http.onreadystatechange = function () {
+                console.log('success change status',http.responseText);
+            }
+            http.send(JSON.stringify(data));
+    }
+
+    function abortCharging(state) {
+        var http = new XMLHttpRequest(),
+            data = {
+                state: state
+            },
+            url = 'http://localhost:3001/abortCharging/';
+            http.open('POST', url, true);
+            http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+            http.onreadystatechange = function () {
+                console.log('success change status',http.responseText);
+            }
+            http.send(JSON.stringify(data));
+    }
+
+    function turnOffPlug(state) {
+        var http = new XMLHttpRequest(),
+            data = {
+                state: state
+            },
+            url = 'http://localhost:3001/turnOffPlug/';
+            http.open('POST', url, true);
+            http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+            http.onreadystatechange = function () {
+                console.log('success change status',http.responseText);
+            }
+            http.send(JSON.stringify(data));
+    }
+</script>
