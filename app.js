@@ -301,7 +301,7 @@ function waitForStart(state) {
     return new Promise((resolve, reject) => {
         fs.readFile("services_boost_api_status.json", function(err, resdata) { 
             if (err) {
-                reject(err);
+                reject(err); 
             } 
             const content = JSON.parse(resdata);
             if(state === 'left') {
