@@ -5,6 +5,9 @@ const path = require('path');
 const cors = require('cors');
 const fs = require("fs"); 
 const { clearLine } = require("readline");
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
+const swaggerDocument = YAML.load('./swagger/api.yaml');
 // const WebSocket = require('ws');
 // const wss = new WebSocket.Server({ port: 3002 })
 
@@ -13,6 +16,7 @@ var app = express();
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use('/swagger', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // wss.on('connection', ws => {
 //     ws.on('message', message => {
@@ -28,13 +32,13 @@ app.post('/updatePlug/', (req, res, next) => {
     });
 });
 app.post('/changeMode/', (req, res, next) => {
-    changeMode(req.body.mode, function(response) {
+    changeMode(req.body.mode).then((response) => {
         // return res.send(response);
         return res.status(200).json({response});
     });
 });
 app.post('/changeStatus/', (req, res, next) => {
-    changeStatus(req.body, function(response) {
+    changeStatus(req.body).then((response) => {
         console.log('response----1',response)
         // res.setHeader('Content-Type', 'application/json');
         return res.json(response);
@@ -42,54 +46,53 @@ app.post('/changeStatus/', (req, res, next) => {
     });
 });
 app.post('/increaseLeftCharging/', (req, res, next) => {
-    increaseLeftCharging(function(response) {
+    increaseLeftCharging().then((response) => {
         return res.send(response);
     });
 });
 app.post('/increaseRightCharging/', (req, res, next) => {
-    increaseRightCharging(function(response) {
+    increaseRightCharging().then((response) => {
         return res.send(response);
     });
 });
 app.post('/changeCCStatus/', (req, res, next) => {
-    changeCCStatus(req.body.status, function(response) {
+    changeCCStatus(req.body.status).then((response) => {
         return res.send(response);
     });
 });
 app.post('/activateState/', (req, res, next) => {
-    activateState(req.body.state, function(response) {
+    activateState(req.body.state).then((response) => {
         return res.send(response);
     });
 });
 app.post('/initializeState/', (req, res, next) => {
-    initializeState(req.body.state, function(response) {
+    initializeState(req.body.state).then((response) => {
         return res.send(response);
     });
 });
 app.post('/insulationCheck/', (req, res, next) => {
-    insulationCheck(req.body.state, function(response) {
+    insulationCheck(req.body.state).then((response) => {
         return res.send(response);
     });
 });
 app.post('/waitForStart/', (req, res, next) => {
-    waitForStart(req.body.state, function(response) {
+    waitForStart(req.body.state).then((response) => {
         return res.send(response);
     });
 });
 app.post('/stopCharging/', (req, res, next) => {
-    setTimeout(() => {
-    stopCharging(req.body.state, function(response) {
-        return res.send(response);
+    stopCharging(req.body.state).then((response) => {
+        // return res.send(response);
+        return res.sendFile(path.join(__dirname,"services_boost_api_status.json"));
     });
-},20000);
 });
 app.post('/abortCharging/', (req, res, next) => {
-    abortCharging(req.body.state, function(response) {
+    abortCharging(req.body.state).then((response) => {
         return res.send(response);
     });
 });
 app.post('/turnOffPlug/', (req, res, next) => {
-    turnOffPlug(req.body.state, function(response) {
+    turnOffPlug(req.body.state).then((response) => {
         return res.send(response);
     });
 });
@@ -316,91 +319,97 @@ function waitForStart(state) {
     });
 }
 
-function stopCharging(state, callback) {
-    fs.readFile("services_boost_api_status.json", function(err, resdata) { 
-        if (err) {
-            return callback(err);
-        } 
-        const content = JSON.parse(resdata);
-        if(state === 'left') {
-            content.leftState = "FINISHING";
-            content.left.chargePercent = 80;
-            content.left.targetChargePercent = 80;
-            content.left.targetRemainingSeconds = 0;
-            content.left.elapsedSeconds = 300;
-            content.left.kwh = 10;
-            content.left.kw = 60;
-            content.left.cost = 10;
-        } else if (state === 'right') {
-            content.rightState = "FINISHING";
-            content.right.chargePercent = 80;
-            content.right.targetChargePercent = 80;
-            content.right.targetRemainingSeconds = 0;
-            content.right.elapsedSeconds = 300;
-            content.right.kwh = 10;
-            content.right.kw = 60;
-            content.right.cost = 10;
-        }
-        fs.writeFile("services_boost_api_status.json", JSON.stringify(content), err => { 
+function stopCharging(state) {
+    return new Promise((resolve, reject) => {
+        fs.readFile("services_boost_api_status.json", function(err, resdata) { 
             if (err) {
-                return callback(err);
+                reject(err);
+            } 
+            const content = JSON.parse(resdata);
+            if(state === 'left') {
+                content.leftState = "FINISHING";
+                content.left.chargePercent = 80;
+                content.left.targetChargePercent = 80;
+                content.left.targetRemainingSeconds = 0;
+                content.left.elapsedSeconds = 300;
+                content.left.kwh = 10;
+                content.left.kw = 60;
+                content.left.cost = 10;
+            } else if (state === 'right') {
+                content.rightState = "FINISHING";
+                content.right.chargePercent = 80;
+                content.right.targetChargePercent = 80;
+                content.right.targetRemainingSeconds = 0;
+                content.right.elapsedSeconds = 300;
+                content.right.kwh = 10;
+                content.right.kw = 60;
+                content.right.cost = 10;
             }
+            fs.writeFile("services_boost_api_status.json", JSON.stringify(content), err => { 
+                if (err) {
+                    reject(err);
+                }
+            });
+            resolve(content);
         });
-        return callback(content);
     });
 }
 
-function abortCharging(state, callback) {
-    fs.readFile("services_boost_api_status.json", function(err, resdata) { 
-        if (err) {
-            return callback(err);
-        } 
-        const content = JSON.parse(resdata);
-        if(state === 'left') {
-            content.leftState = "ABORTING";
-            content.left.chargePercent = 80;
-            content.left.targetChargePercent = 80;
-            content.left.targetRemainingSeconds = 0;
-            content.left.elapsedSeconds = 300;
-            content.left.kwh = 10;
-            content.left.kw = 60;
-            content.left.cost = 10;
-        } else if (state === 'right') {
-            content.rightState = "ABORTING";
-            content.right.chargePercent = 80;
-            content.right.targetChargePercent = 80;
-            content.right.targetRemainingSeconds = 0;
-            content.right.elapsedSeconds = 300;
-            content.right.kwh = 10;
-            content.right.kw = 60;
-            content.right.cost = 10;
-        }
-        fs.writeFile("services_boost_api_status.json", JSON.stringify(content), err => { 
+function abortCharging(state) {
+    new Promise((resolve, reject) => {
+        fs.readFile("services_boost_api_status.json", function(err, resdata) { 
             if (err) {
-                return callback(err);
+                reject(err);
+            } 
+            const content = JSON.parse(resdata);
+            if(state === 'left') {
+                content.leftState = "ABORTING";
+                content.left.chargePercent = 80;
+                content.left.targetChargePercent = 80;
+                content.left.targetRemainingSeconds = 0;
+                content.left.elapsedSeconds = 300;
+                content.left.kwh = 10;
+                content.left.kw = 60;
+                content.left.cost = 10;
+            } else if (state === 'right') {
+                content.rightState = "ABORTING";
+                content.right.chargePercent = 80;
+                content.right.targetChargePercent = 80;
+                content.right.targetRemainingSeconds = 0;
+                content.right.elapsedSeconds = 300;
+                content.right.kwh = 10;
+                content.right.kw = 60;
+                content.right.cost = 10;
             }
+            fs.writeFile("services_boost_api_status.json", JSON.stringify(content), err => { 
+                if (err) {
+                    reject(err);
+                }
+            });
+            resolve(content);
         });
-        return callback(content);
     });
 }
 
-function turnOffPlug(state, callback) {
-    fs.readFile("services_boost_api_status.json", function(err, resdata) { 
-        if (err) {
-            return callback(err);
-        } 
-        const content = JSON.parse(resdata);
-        if(state === 'left') {
-            content.leftState = "UNAVAILABLE";
-        } else if (state === 'right') {
-            content.rightState = "UNAVAILABLE";
-        }
-        fs.writeFile("services_boost_api_status.json", JSON.stringify(content), err => { 
+function turnOffPlug(state) {
+    new Promise((resolve, reject) => {
+        fs.readFile("services_boost_api_status.json", function(err, resdata) { 
             if (err) {
-                return callback(err);
+                reject(err);
+            } 
+            const content = JSON.parse(resdata);
+            if(state === 'left') {
+                content.leftState = "UNAVAILABLE";
+            } else if (state === 'right') {
+                content.rightState = "UNAVAILABLE";
             }
+            fs.writeFile("services_boost_api_status.json", JSON.stringify(content), err => { 
+                if (err) {
+                    reject(err);
+                }
+            });
+            resolve(content);
         });
-        return callback(content);
     });
 }
 
