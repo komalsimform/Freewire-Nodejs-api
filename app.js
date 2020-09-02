@@ -8,29 +8,38 @@ const { clearLine } = require("readline");
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const swaggerDocument = YAML.load('./swagger/api.yaml');
+const cron = require('node-cron');
 // const WebSocket = require('ws');
 // const wss = new WebSocket.Server({ port: 3002 })
 
 
 var app = express();
+var plug = '';
 
 app.use(cors());
 app.use(bodyParser.json());
 app.use('/swagger', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-// wss.on('connection', ws => {
-//     ws.on('message', message => {
-//       console.log(`Received message => ${message}`)
-//     })
-//     ws.send('Hello! Message From Server!!')
-// });
+app.post('/services/boost/api/seq/:plug/start/', (req, res) => {
+    plug = req.params.plug;
+    startCharging(req.params.plug).then((response) => {
 
+    });
+});
 
-app.post('/updatePlug/', (req, res, next) => {
+app.post('/services/boost/api/seq/:plug/', (req, res) => {
+    plug = req.params.plug;
+    stopCharging(req.params.plug).then((response) => {
+
+    });
+});
+
+ app.post('/updatePlug/', (req, res) => {
     updatePlug(req.body.plug1, req.body.plug2).then((response) => {
         return res.send(response);
     });
 });
+
 app.post('/changeMode/', (req, res, next) => {
     changeMode(req.body.mode).then((response) => {
         // return res.send(response);
@@ -101,6 +110,126 @@ app.post('/turnOffPlug/', (req, res, next) => {
 app.listen(3001, () => {
     console.log("Server running on port 3001");
 });
+
+cron.schedule('*/3 * * * * * /test.sh', () => {
+    console.log('cron cllll')
+    if(plug) {
+        refreshCharging(plug).then((response) => {
+            
+        });
+    }
+});
+
+function refreshCharging(plug) {
+    return new Promise((resolve, reject) => {
+        fs.readFile("services_boost_api_status.json", function(err, data) {       
+            if (err) {
+                reject(err);
+            }
+            const content = JSON.parse(data);
+
+            if(content.leftState === 'FINISHING') {
+                content.leftState = 'AVAILABLE';
+            } 
+            if(content.rightState === 'FINISHING')  {
+                content.rightState = 'AVAILABLE';
+            } 
+            if(plug === 'left' && content.leftState === 'INITIALIZING' && content.cardReader.state === 'IDLE') {
+                content.leftState = 'AUTHORIZING';
+            }
+            if(plug === 'right' && content.rightState === 'INITIALIZING' && content.cardReader.state === 'IDLE') {
+                content.rightState = 'AUTHORIZING';
+            } 
+            if(plug === 'left' && content.leftState === 'AUTHORIZING' && content.cardReader.state === 'CARD_AUTHORIZING') {
+                content.leftState = 'WAIT_FOR_START';
+            }
+            if(plug === 'right' && content.rightState === 'AUTHORIZING' && content.cardReader.state === 'CARD_AUTHORIZING') {
+                content.rightState = 'WAIT_FOR_START';
+            }
+            if(plug === 'left' && content.leftState === 'WAIT_FOR_START') {
+                content.leftState = 'NEGOTIATING';
+            }
+            if(plug === 'right' && content.rightState === 'WAIT_FOR_START') {
+                content.rightState = 'NEGOTIATING';
+            }
+            if(plug === 'left' && content.leftState === 'NEGOTIATING') {
+                content.leftState = 'SAFETY_TEST';
+            }
+            if(plug === 'right' && content.rightState === 'NEGOTIATING') {
+                content.rightState = 'SAFETY_TEST';
+            }
+            if(plug === 'left' && content.leftState === 'SAFETY_TEST') {
+                content.leftState = 'CHARGING';
+            }
+            if(plug === 'right' && content.rightState === 'SAFETY_TEST') {
+                content.rightState = 'CHARGING';
+            }
+            if(content.leftState === 'CHARGING' || content.rightState === 'CHARGING') {
+                content[plug].chargePercent += 1;
+                content[plug].targetRemainingSeconds -= 3;
+            }
+            if(content[plug].chargePercent === 100) {
+                if(plug === 'left')
+                    content.leftState = 'FINISHING';
+                else
+                    content.rightState = 'FINISHING';
+            }
+
+            fs.writeFile("services_boost_api_status.json", JSON.stringify(content), err => { 
+                if (err) {
+                    reject(err);
+                } 
+            });
+            resolve(content);
+        });
+    });
+}
+
+function startCharging(plug) {
+    return new Promise((resolve, reject) => {
+        fs.readFile("services_boost_api_status.json", function(err, data) {       
+            if (err) {
+                reject(err);
+            }
+            const content = JSON.parse(data);
+            content[plug].targetRemainingSeconds = 300;
+            if(plug === 'left') {
+                content.leftState = 'INITIALIZING';
+            } else {
+                content.rightState = 'INITIALIZING';
+            }
+            fs.writeFile("services_boost_api_status.json", JSON.stringify(content), err => { 
+                if (err) {
+                    reject(err);
+                } 
+            });
+            resolve(content);
+        });
+    });
+}
+
+function stopCharging(plug) {
+    return new Promise((resolve, reject) => {
+        fs.readFile("services_boost_api_status.json", function(err, data) {       
+            if (err) {
+                reject(err);
+            }
+            const content = JSON.parse(data);
+            content[plug].targetRemainingSeconds = 0;
+            content[plug].chargePercent = 40;
+            if(plug === 'left')
+                content.leftState = 'FINISHING';
+            else
+                content.rightState = 'FINISHING';
+            fs.writeFile("services_boost_api_status.json", JSON.stringify(content), err => { 
+                if (err) {
+                    reject(err);
+                } 
+            });
+            resolve(content);
+        });
+    });
+}
 
 function updatePlug(plug1, plug2)  {
     return new Promise((resolve, reject) => {
